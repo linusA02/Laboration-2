@@ -3,42 +3,12 @@ from typing import Any
 import requests
 from currencyhandler import CurrencyHandler
 
-# DO NOT UPLOAD A VIRTUAL ENVIRONMENT TO GIT
-# Add the name of your virtual environment to .gitignore
-# Now you can git add and git commit.
-# Remove the pass keyword from the method when you start implementing the method
-
-# REMEMBER TO MAKE COMMITS FREQUENTLY! I don't want to see only 1 commit with all the code in it.
-# You can remove these comments^
-
-# Think of the CurrencyHandler as a class that should strictly only handle functionality.
-# Using print, input or similar should be done outside of the class, in such way
-# that you COULD use the currencyhandler in any type of application that might
-# want to use currencies
-
 
 def main() -> None:
     """
     The main function that runs the currency conversion application.
-
-    This function should:
-    1. Create an instance of the CurrencyHandler class.
-    2. Display a menu of options to the user.
-    3. Handle user input and call the appropriate methods of the CurrencyHandler.
-    4. Provide a loop to allow multiple operations in a single session.
-    5. Handle any errors or exceptions that may occur during operation.
-
-    Menu options should include:
-    [0] - List all currencies
-    [1] - Convert USD to a currency of choice
-    [2] - Manually refresh the data (fetch new currency data)
-    [3] - Export the data to JSON
-    [4] - Convert from any currency to any currency
-    [5] - Get historical exchange rate
-    [6] - List historical rates for a currency + more
-    [7] - Exit the application
     """
-    # Use this instance of CurrencyHandler to do stuff in your menu.
+
     currency_handler = CurrencyHandler()
 
     while True:
@@ -55,25 +25,95 @@ def main() -> None:
         choice = input("Enter your choice (0-7): ")
 
         if choice == "0":
-            pass
+            currencies = currency_handler.list_currencies()
+
+            print("\nAvailable currencies:")
+            print(", ".join(currencies))
 
         elif choice == "1":
-            pass
+            try:
+                currency = input("Enter the currency you want to convert to: ")
+                amount = float(input("Enter the amount in USD: "))
+
+                result = currency_handler.convert_from_usd(currency, amount)
+
+                print(f"{amount:.2f} USD = {result:.2f} {currency.upper()}")
+
+            except ValueError as error:
+                print(f"Error: {error}")
 
         elif choice == "2":
-            pass
+            data = currency_handler.fetch_currency_data()
+
+            if data:
+                print("Currency data has been refreshed.")
+            else:
+                print("Could not refresh currency data.")
 
         elif choice == "3":
-            pass
+            try:
+                currency_handler.export_to_json()
+                print("Currency data has been exported to JSON.")
+
+            except IOError as error:
+                print(f"Error: {error}")
 
         elif choice == "4":
-            pass
+            try:
+                from_currency = input("Enter the currency you have: ")
+                to_currency = input("Enter the currency you want: ")
+                amount = float(input("Enter the amount: "))
+
+                result = currency_handler.convert_any_currency(
+                    from_currency,
+                    to_currency,
+                    amount
+                )
+
+                print(
+                    f"{amount:.2f} {from_currency.upper()} = "
+                    f"{result:.2f} {to_currency.upper()}"
+                )
+
+            except ValueError as error:
+                print(f"Error: {error}")
 
         elif choice == "5":
-            pass
+            try:
+                date = input("Enter date (YYYY-MM-DD): ")
+                base_currency = input("Enter base currency: ")
+
+                data = currency_handler.get_historical_rate(
+                    date,
+                    base_currency
+                )
+
+                print(f"\nHistorical rates for {date}")
+                print(f"Base currency: {data['base']}")
+
+                for currency, rate in data["rates"].items():
+                    print(f"{currency}: {rate}")
+
+            except (ValueError, RuntimeError) as error:
+                print(f"Error: {error}")
 
         elif choice == "6":
-            pass
+            try:
+                currency = input("Enter currency: ")
+                days = int(input("How many days do you want to check? "))
+
+                rates = currency_handler.list_historical_rates_for_currency(
+                    currency,
+                    days
+                )
+
+                print(f"\nHistorical rates for {currency.upper()}:")
+
+                for date, rate in rates:
+                    print(f"{date}: {rate}")
+
+            except ValueError as error:
+                print(f"Error: {error}")
 
         elif choice == "7":
             print("Thank you for using the Currency Converter. Goodbye!")
